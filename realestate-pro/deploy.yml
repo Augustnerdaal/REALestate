@@ -1,0 +1,45 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Kör varje gång du pushar till main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout koden
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Installera beroenden
+        run: npm install
+
+      - name: Bygg projektet
+        run: npm run build
+
+      - name: Ladda upp build som artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploya till GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
